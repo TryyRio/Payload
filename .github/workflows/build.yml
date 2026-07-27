@@ -1,0 +1,24 @@
+name: Build iOS Payload
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Fix line endings
+        run: sed -i '' 's/\r$//' build.sh
+      
+      - name: Build implant
+        run: bash build.sh
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: implant
+          path: implant.bin
